@@ -2,9 +2,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Tours.Domain\Tours.Domain.csproj" />
-    <ProjectReference Include="..\Tours.Application\Tours.Application.csproj" />
-    <ProjectReference Include="..\Tours.Infrastructure.Postgres\Tours.Infrastructure.Postgres.csproj" />
-    <ProjectReference Include="..\Tours.Infrastructure.Weather\Tours.Infrastructure.Weather.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ModelContextProtocol" Version="1.4.0" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="1.4.0" />
   </ItemGroup>
 
   <PropertyGroup>

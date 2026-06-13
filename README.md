@@ -29,9 +29,17 @@ Incluye:
 Connection string en:
 
 - `Tours.Api/appsettings.json`
-- `Tours.Mcp/appsettings.json`
 
 Clave: `ConnectionStrings:Postgres`
+
+Configuracion MCP en:
+
+- `Tours.Mcp/appsettings.json`
+
+Claves:
+
+- `Mcp:Transport` (`http` o `stdio`)
+- `Mcp:ApiBaseUrl` (URL base de `Tours.Api`)
 
 Para inicializar PostgreSQL con Docker:
 
@@ -89,6 +97,8 @@ Para una nueva migracion:
 ```powershell
 cd d:\temporal\Tours
 
+dotnet run --project .\Tours.Api\Tours.Api.csproj
+
 dotnet run --project .\Tours.Mcp\Tours.Mcp.csproj
 ```
 
@@ -108,6 +118,8 @@ Metodos soportados:
 
 ```powershell
 cd d:\temporal\Tours
+
+dotnet run --project .\Tours.Api\Tours.Api.csproj
 
 $env:MCP_TRANSPORT = "stdio"
 dotnet run --project .\Tours.Mcp\Tours.Mcp.csproj
@@ -132,7 +144,8 @@ Requisito: Node.js 18+ (para usar `npx`).
 cd d:\temporal\Tours
 
 $env:MCP_TRANSPORT = "stdio"
-npx @modelcontextprotocol/inspector dotnet run --project .\Tours.Mcp\Tours.Mcp.csproj
+dotnet build .\Tours.Mcp\Tours.Mcp.csproj
+npx @modelcontextprotocol/inspector dotnet run --no-build --no-launch-profile --project .\Tours.Mcp\Tours.Mcp.csproj
 ```
 
 Esto abre el Inspector en el navegador y levanta el servidor MCP como proceso hijo por `stdio`.

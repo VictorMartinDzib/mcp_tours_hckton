@@ -1,39 +1,61 @@
-using Tours.Application.Extensions;
-using Tours.Infrastructure.Postgres.Extensions;
-using Tours.Infrastructure.Weather.Extensions;
-using Tours.Mcp.Models;
+using Microsoft.Extensions.Logging;
+using ModelContextProtocol.Server;
 using Tours.Mcp.Tools;
-using Tours.Mcp.Transport;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddApplication();
-builder.Services.AddPostgresInfrastructure(builder.Configuration);
-builder.Services.AddWeatherInfrastructure();
-builder.Services.AddScoped<TourOperatorMcpToolHandler>();
-
 var transport = builder.Configuration["Mcp:Transport"]
 	?? Environment.GetEnvironmentVariable("MCP_TRANSPORT")
 	?? "http";
-var app = builder.Build();
-await app.Services.ApplyMigrationsAndSeedAsync(CancellationToken.None);
+var isStdioTransport = string.Equals(transport, "stdio", StringComparison.OrdinalIgnoreCase);
 
-if (string.Equals(transport, "stdio", StringComparison.OrdinalIgnoreCase))
+if (isStdioTransport)
 {
-	await StdioMcpServer.RunAsync(app.Services);
-	return;
+	builder.Logging.ClearProviders();
+	builder.Logging.AddConsole(options =>
+	{
+		options.LogToStandardErrorThreshold = LogLevel.Trace;
+	});
 }
 
-app.MapPost("/mcp", async (McpRequest request, TourOperatorMcpToolHandler handler, CancellationToken cancellationToken) =>
+builder.Services.AddHttpClient<ToursApiClient>((serviceProvider, client) =>
 {
-	var response = await handler.HandleAsync(request, cancellationToken);
-	return Results.Json(response);
+	var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+	var apiBaseUrl = configuration["Mcp:ApiBaseUrl"]
+		?? Environment.GetEnvironmentVariable("TOURS_API_URL")
+		?? "http://localhost:5073";
+
+	if (!Uri.TryCreate(apiBaseUrl, UriKind.Absolute, out var apiBaseUri))
+	{
+		throw new InvalidOperationException("Mcp:ApiBaseUrl no es una URL valida.");
+	}
+
+	client.BaseAddress = apiBaseUri;
 });
 
-app.MapGet("/", () => Results.Ok(new
-{
-	server = "Tours MCP",
-	mode = "http",
-	guidance = "El agente actua como tour operador y solicita destino, fechas, personas, edades, preferencias y presupuesto."
-}));
+var mcpBuilder = builder.Services
+	.AddMcpServer()
+	.WithTools<TourOperatorMcpTools>();
 
-app.Run();
+if (isStdioTransport)
+{
+	mcpBuilder.WithStdioServerTransport();
+}
+else
+{
+	mcpBuilder.WithHttpTransport(options => options.Stateless = true);
+}
+
+var app = builder.Build();
+
+if (!isStdioTransport)
+{
+	app.MapMcp("/mcp");
+	app.MapGet("/", () => Results.Ok(new
+	{
+		server = "Tours MCP",
+		mode = "http",
+		guidance = "El agente actua como tour operador y solicita destino, fechas, personas, edades, preferencias y presupuesto."
+	}));
+}
+
+await app.RunAsync();
