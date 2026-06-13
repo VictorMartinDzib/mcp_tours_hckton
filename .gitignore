@@ -1,0 +1,13 @@
+﻿Tours.Api/bin
+Tours.Api/obj
+Tours.Application/bin
+Tours.Application/obj
+Tours.Domain/bin
+Tours.Domain/obj
+Tours.Infrastructure.Postgres/bin
+Tours.Infrastructure.Postgres/obj
+Tours.Infrastructure.Weather/bin
+Tours.Infrastructure.Weather/obj
+Tours.Mcp/bin
+Tours.Mcp/obj
+Prompt.md

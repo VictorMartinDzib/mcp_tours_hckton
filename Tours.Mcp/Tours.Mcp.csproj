@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Tours.Domain\Tours.Domain.csproj" />
+    <ProjectReference Include="..\Tours.Application\Tours.Application.csproj" />
+    <ProjectReference Include="..\Tours.Infrastructure.Postgres\Tours.Infrastructure.Postgres.csproj" />
+    <ProjectReference Include="..\Tours.Infrastructure.Weather\Tours.Infrastructure.Weather.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>

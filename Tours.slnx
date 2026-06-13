@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="Tours.Api/Tours.Api.csproj" />
+  <Project Path="Tours.Application/Tours.Application.csproj" />
+  <Project Path="Tours.Domain/Tours.Domain.csproj" />
+  <Project Path="Tours.Infrastructure.Postgres/Tours.Infrastructure.Postgres.csproj" />
+  <Project Path="Tours.Infrastructure.Weather/Tours.Infrastructure.Weather.csproj" />
+  <Project Path="Tours.Mcp/Tours.Mcp.csproj" />
+</Solution>
