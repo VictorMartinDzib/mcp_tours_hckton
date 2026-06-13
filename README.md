@@ -7,14 +7,14 @@ Incluye:
 - API de itinerarios personalizados por destino, fechas, preferencias y presupuesto.
 - Evaluacion de clima por actividad con Open-Meteo y sugerencias alternativas.
 - MCP con dos transportes: `http` y `stdio`.
-- Persistencia en PostgreSQL con EF Core y migraciones.
+- Persistencia en PostgreSQL con Dapper y migraciones SQL.
 - Siembra automatica de 120 actividades con combinaciones variadas.
 
 ## Arquitectura
 
 - `Tours.Domain`: entidades, enums e interfaces compartidas.
 - `Tours.Application`: casos de uso y servicios de negocio.
-- `Tours.Infrastructure.Postgres`: EF Core, repositorios, migraciones y seeding.
+- `Tours.Infrastructure.Postgres`: Dapper, repositorios, migraciones y seeding.
 - `Tours.Infrastructure.Weather`: integracion Open-Meteo.
 - `Tours.Api`: API REST con controladores y `ActionResult`.
 - `Tours.Mcp`: servidor MCP (`http` y `stdio`).
@@ -76,15 +76,13 @@ Endpoints principales:
 
 ## Migraciones
 
-Ya incluye migracion inicial en `Tours.Infrastructure.Postgres/Migrations`.
+Las migraciones SQL viven en `Tours.Infrastructure.Postgres/Migrations/Scripts` y se aplican automaticamente al iniciar API/MCP.
 
-Comando para nuevas migraciones:
+Para una nueva migracion:
 
-```powershell
-cd d:\temporal\Tours
-
-dotnet ef migrations add NombreMigracion --project .\Tours.Infrastructure.Postgres\Tours.Infrastructure.Postgres.csproj --startup-project .\Tours.Api\Tours.Api.csproj --output-dir Migrations
-```
+1. Crea un archivo con prefijo de version ordenable, por ejemplo: `20260614000100_AddIndexes.sql`.
+2. Agrega SQL idempotente (`create table if not exists`, `alter table ... add column if not exists`, etc.).
+3. Reinicia API o MCP para aplicar scripts pendientes.
 
 ## Ejecutar MCP por HTTP
 
@@ -123,6 +121,49 @@ En `tour_operator.generate_itinerary`, si faltan campos, responde `needs_input` 
 - edades
 - preferencias
 - presupuesto
+
+## Probar MCP con MCP Inspector
+
+Requisito: Node.js 18+ (para usar `npx`).
+
+### Opcion 1: Inspeccionar MCP por STDIO
+
+```powershell
+cd d:\temporal\Tours
+
+$env:MCP_TRANSPORT = "stdio"
+npx @modelcontextprotocol/inspector dotnet run --project .\Tours.Mcp\Tours.Mcp.csproj
+```
+
+Esto abre el Inspector en el navegador y levanta el servidor MCP como proceso hijo por `stdio`.
+
+### Opcion 2: Inspeccionar MCP por HTTP
+
+1. Inicia el servidor MCP:
+
+```powershell
+cd d:\temporal\Tours
+
+$env:MCP_TRANSPORT = "http"
+dotnet run --project .\Tours.Mcp\Tours.Mcp.csproj
+```
+
+2. En otra terminal, abre MCP Inspector:
+
+```powershell
+npx @modelcontextprotocol/inspector
+```
+
+3. En la UI de Inspector, conecta con:
+
+- Transport: `Streamable HTTP`
+- URL: `http://localhost:5111/mcp`
+
+Una vez conectado, puedes usar `tools/list` y luego `tools/call` para probar:
+
+- `tour_operator.generate_itinerary`
+- `tour_operator.replace_activity`
+- `tour_operator.add_activity`
 
 ## Logica climatica (Open-Meteo)
 
