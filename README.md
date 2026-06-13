@@ -33,6 +33,14 @@ Connection string en:
 
 Clave: `ConnectionStrings:Postgres`
 
+Para inicializar PostgreSQL con Docker:
+
+```powershell
+cd d:\temporal\Tours\Tours.Api
+
+docker compose up -d postgres
+```
+
 ## Ejecutar API
 
 ```powershell
